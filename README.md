@@ -1,4 +1,9 @@
 # Data warehousing + ETL
+##TODO
+- [ ] Create Dockerfile w/ instructions to setup the python venv
+- [ ] Add service to create a python container to run code
+- [ ] Add code `load_data.py` to automatically download data 
+- [ ] _Transform_: Create a new file to process data (data cleaning, formatting, etc)
 
 ## Introduction
 In this project we will answer some business questions regarding (#todo: topic) . To this end, we will build all the necessary infrastructure to gather (Extract) data from multiple sources, normalize and clean it (Transform) and store it into a data warehouse.
@@ -23,5 +28,7 @@ The technologies required to set up the baseline structure are:
 
 ### Docker containers
 - (Install docker)
+- Build the docker images using `docker-compose build`
 - Start the containers using `docker-compose up -d`
 - Verify that containers are running by using `docker ps`. You should see 2 containers.
+
