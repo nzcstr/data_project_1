@@ -2,7 +2,7 @@
 ##TODO
 - [ ] Create Dockerfile w/ instructions to setup the python venv
 - [ ] Add service to create a python container to run code
-- [ ] Add code `load_data.py` to automatically download data 
+- [x] Add code `load_data.py` to automatically download data 
 - [ ] _Transform_: Create a new file to process data (data cleaning, formatting, etc)
 
 ## Introduction
