@@ -13,3 +13,15 @@ The technologies required to set up the baseline structure are:
 - Docker: To ensure reproducibility of project in different machines and to facilitate its deployment
 - (#todo: warehouse solution)
 - Apache Airflow: to orchestrate and automate the different steps included in the data pipelines
+
+
+## Setup environment
+### Python environment
+- Download the `requirements.txt` file to setup the python environment.
+- Once you created a new python virtual environment, use `source path/to/python/env/bin/active`
+- Install dependencies using `pip install -r path/to/requirements.txt`
+
+### Docker containers
+- (Install docker)
+- Start the containers using `docker-compose up -d`
+- Verify that containers are running by using `docker ps`. You should see 2 containers.
