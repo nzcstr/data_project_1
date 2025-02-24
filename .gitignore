@@ -9,3 +9,4 @@ __pycache__/
 ml-latest.zip
 ml-latest/
 data/
+.idea/
