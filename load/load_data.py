@@ -11,12 +11,19 @@ if not os.path.isdir(data_dir):
     os.mkdir(data_dir)
 url = "https://files.grouplens.org/datasets/movielens/ml-latest.zip"
 dst = os.path.join(data_dir, "ml-latest.zip")
-wget.download(url, dst)
-print("Data downloaded")
-# Extract
-with ZipFile(dst, 'r') as zip_file:
-    zip_file.extractall(data_dir)
-print(f"Data extracted into {data_dir}")
+if not os.path.isfile(dst):
+    wget.download(url, dst)
+    print("Data downloaded")
+else:
+    print("Data already downloaded")
+
+#Extract
+if not os.path.isdir(os.path.join(data_dir, "ml-latest")):
+    with ZipFile(dst, 'r') as zip_file:
+        zip_file.extractall(data_dir)
+    print(f"Data extracted into {data_dir}")
+else:
+    print("Data already extracted")
 
 # Connect to MongoDB running in Docker
 client = MongoClient("mongodb://localhost:27017/")
@@ -25,7 +32,7 @@ client = MongoClient("mongodb://localhost:27017/")
 db = client["movies_db"]
 collection = db["movies"]
 
-src_csv = "./ml-latest/movies.csv"
+src_csv = os.path.join(data_dir, "ml-latest","movies.csv")
 df = pd.read_csv(src_csv)
 
 # Convert dataframe to a list of dictionaries.

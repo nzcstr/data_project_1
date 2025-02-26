@@ -26,4 +26,3 @@ services:
 volumes:
   mongo_data:
   pg_data:
-
