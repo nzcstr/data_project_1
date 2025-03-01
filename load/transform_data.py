@@ -1,27 +1,27 @@
-from pyspark import SparkConf, SparkContext
+#from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, col, expr, when, explode
-from pyspark.sql.types import StringType, NullType, IntegerType, DoubleType, FloatType
+from pyspark.sql.functions import udf, explode , col, expr, when
+#from pyspark.sql.types import StringType, NullType, IntegerType, DoubleType, FloatType
 
 
 #def main():
 # Define MongoDB Connection URI
-db_name = "netflix_db"
-collection_name = "shows"
-mongo_uri = f"mongodb://localhost:27017/{db_name}.{collection_name}"
+DB_NAME = "netflix_db"
+COLLECTION_NAME = "shows"
+mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}"
 
 
 
 # Create a PySpark session with MongoDB support
 spark = SparkSession.builder \
-    .appName("ShowRecomendation") \
+    .appName("ShowRecommendation") \
     .config("spark.mongodb.input.uri", mongo_uri) \
     .config("spark.mongodb.output.uri", mongo_uri) \
     .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.4.1") \
     .getOrCreate()
 
 # Load Data from MongoDB
-df = spark.read.format("mongodb").option("database", db_name).option("collection", collection_name).load()
+df = spark.read.format("mongodb").option("database", DB_NAME).option("collection", COLLECTION_NAME).load()
 
 # Show Data
 df.show(5)
@@ -61,19 +61,27 @@ spark.sql("select distinct director from df_temp").show()
 # df_filtered_1.show()
 
 df = df.replace(df.select("director").collect()[1][0], None)
+
+# Get titles with director == NULL
+missing_directors = df.where(df["director"].isNull()).select("title", "director")
+missing_cast = df.where(df["cast"].isNull()).select("title", "cast")
+
 print("Schema before")
 df.printSchema()
 cols = df.columns
-for c in cols:
-    new_col_udf = udf(lambda x: None if "numberDouble" in x else x, df.schema[c].dataType)
-    df = df.withColumn(c, new_col_udf(c))
+# for c in cols:
+#     df = df.withColumn(c, new_col_udf(c))
+#     new_col_udf = udf(lambda x: None if "numberDouble" in x else x, df.schema[c].dataType)
 
 df_w_null = df.filter(df["cast"].isNotNull())
-df_flat = df.withColumn("cast_member", explode("cast"))
+# df_flat = df.withColumn("cast_member", explode("cast"))
 # df.select("director").show()
 # df.select("cast").show()
-#df2 = df.dropna()
+#df2 = df.na.drop()
 print("Schema after")
-df.printSchema()
+df_w_null.printSchema()
+
+#Remove rows with NULL columns
+df_w_null = df_w_null.dropna()
 # if __name__ == "__main__":
 #     main()

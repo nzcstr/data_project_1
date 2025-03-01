@@ -8,26 +8,26 @@ from zipfile import ZipFile
 
 def main():
 # Download data
-    data_dir="./data"
-    url = "https://www.kaggle.com/api/v1/datasets/download/shivamb/netflix-shows"
-    file_name = "netflix-shows.zip"
-    db_name = "netflix_db"
-    collection_name = "shows"
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
+    DATA_DIR="./data"
+    URL = "https://www.kaggle.com/api/v1/datasets/download/shivamb/netflix-shows"
+    FILE_NAME = "netflix-shows.zip"
+    DB_NAME = "netflix_db"
+    COLLECTION_NAME = "shows"
+    if not os.path.isdir(DATA_DIR):
+        os.mkdir(DATA_DIR)
 
-    dst = os.path.join(data_dir, file_name)
+    dst = os.path.join(DATA_DIR, FILE_NAME)
     if not os.path.isfile(dst):
-        wget.download(url, dst)
+        wget.download(URL, dst)
         print("Data downloaded")
     else:
         print("Data already downloaded")
 
     #Extract
-    if not os.path.isdir(os.path.join(data_dir, file_name[:-4])):
+    if not os.path.isdir(os.path.join(DATA_DIR, FILE_NAME[:-4])):
         with ZipFile(dst, 'r') as zip_file:
-            zip_file.extractall(data_dir)
-        print(f"Data extracted into {data_dir}")
+            zip_file.extractall(DATA_DIR)
+        print(f"Data extracted into {DATA_DIR}")
     else:
         print("Data already extracted")
 
@@ -35,10 +35,10 @@ def main():
     client = MongoClient("mongodb://localhost:27017/")
 
     # Select db and collection
-    db = client[db_name]
-    collection = db[collection_name]
+    db = client[DB_NAME]
+    collection = db[COLLECTION_NAME]
 
-    src_csv = os.path.join(data_dir, file_name)
+    src_csv = os.path.join(DATA_DIR, FILE_NAME)
     df = pd.read_csv(src_csv)
 
     # Convert dataframe to a list of dictionaries.
