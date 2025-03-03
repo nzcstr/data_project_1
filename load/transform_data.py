@@ -10,15 +10,27 @@ DB_NAME = "netflix_db"
 COLLECTION_NAME = "shows"
 mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}"
 
+# Define PGSQL Conection details
+pg_url = "jdbc:postgresql://localhost:5432/netflix_show_recommendation"
+postgres_properties = {
+    "user": "user",
+    "password": "password",
+    "driver": "org.postgresql.Driver"
+}
+table_name = "netflix_shows"
 
 
 # Create a PySpark session with MongoDB support
+# Add postgreSQL support too
 spark = SparkSession.builder \
     .appName("ShowRecommendation") \
     .config("spark.mongodb.input.uri", mongo_uri) \
     .config("spark.mongodb.output.uri", mongo_uri) \
     .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.4.1") \
+    .config("spark.ajrs.packages", " org.postgresql:postgresql:42.7.4") \
     .getOrCreate()
+
+#  .config("spark.jars.packages", "org.postgresql:postgresql:42.2.27") \
 
 # Load Data from MongoDB
 df = spark.read.format("mongodb").option("database", DB_NAME).option("collection", COLLECTION_NAME).load()
@@ -60,7 +72,9 @@ spark.sql("select distinct director from df_temp").show()
 # df_filtered_1 = df.where(~col("director").contains("numberDouble"))
 # df_filtered_1.show()
 
-df = df.replace(df.select("director").collect()[1][0], None)
+unparsed_null = '{"$numberDouble": "NaN"}'
+# df = df.replace(df.select("director").collect()[1][0], None) # Inefficient and risky hard-code. Select a specific cell containing an unparsed instance of NULL value then Replace all these instances in the "director" column
+df = df.na.replace(unparsed_null, None) # More efficient code. Replaces all unparsed NULL values in all columns. No hard-coded
 
 # Get titles with director == NULL
 missing_directors = df.where(df["director"].isNull()).select("title", "director")
@@ -73,15 +87,36 @@ cols = df.columns
 #     df = df.withColumn(c, new_col_udf(c))
 #     new_col_udf = udf(lambda x: None if "numberDouble" in x else x, df.schema[c].dataType)
 
-df_w_null = df.filter(df["cast"].isNotNull())
+# Get only without missing cast
+#df_wo_null_cast = df.filter(df["cast"].isNotNull())
+# Get only without missing directors
+#df_wo_null_directors = df_wo_null_cast.filter(df_wo_null_cast["director"].isNotNull())
+# Drop all rows with NULL values in any column
+#Remove rows with NULL columns
+df_wo_null_cast_directors = df.dropna()
+print(f"Number of entries after dropping NULL: {df_wo_null_cast_directors.count()}")
+
+# Export to postgresql DB
+df_wo_null_cast_directors.write.format("jdbc") \
+    .option("url", pg_url) \
+    .option("dbtable", table_name) \
+    .option("user", postgres_properties["user"]) \
+    .option("password", postgres_properties["password"]) \
+    .option("driver", postgres_properties["driver"]) \
+    .mode("overwrite").save()
+
 # df_flat = df.withColumn("cast_member", explode("cast"))
 # df.select("director").show()
 # df.select("cast").show()
 #df2 = df.na.drop()
-print("Schema after")
-df_w_null.printSchema()
 
-#Remove rows with NULL columns
-df_w_null = df_w_null.dropna()
+
+
+
+
+
+
+# Export to pgsql
+
 # if __name__ == "__main__":
 #     main()
