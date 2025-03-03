@@ -26,8 +26,9 @@ spark = SparkSession.builder \
     .appName("ShowRecommendation") \
     .config("spark.mongodb.input.uri", mongo_uri) \
     .config("spark.mongodb.output.uri", mongo_uri) \
-    .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.4.1") \
-    .config("spark.ajrs.packages", " org.postgresql:postgresql:42.7.4") \
+    .config("spark.jars.packages",
+            "org.mongodb.spark:mongo-spark-connector_2.12:10.4.1,"
+            "org.postgresql:postgresql:42.7.4") \
     .getOrCreate()
 
 #  .config("spark.jars.packages", "org.postgresql:postgresql:42.2.27") \
@@ -41,7 +42,8 @@ df.show(5)
 # Number of entries
 print(f"Number of entries: {df.count()}")
 
-# Drop null values
+print("Schema before editing")
+df.printSchema()
 
 # Exploring data with SparkSQL
 df.createOrReplaceTempView("df_temp")
@@ -80,9 +82,8 @@ df = df.na.replace(unparsed_null, None) # More efficient code. Replaces all unpa
 missing_directors = df.where(df["director"].isNull()).select("title", "director")
 missing_cast = df.where(df["cast"].isNull()).select("title", "cast")
 
-print("Schema before")
-df.printSchema()
-cols = df.columns
+
+#cols = df.columns
 # for c in cols:
 #     df = df.withColumn(c, new_col_udf(c))
 #     new_col_udf = udf(lambda x: None if "numberDouble" in x else x, df.schema[c].dataType)
@@ -104,6 +105,9 @@ df_wo_null_cast_directors.write.format("jdbc") \
     .option("password", postgres_properties["password"]) \
     .option("driver", postgres_properties["driver"]) \
     .mode("overwrite").save()
+print("Exported")
+
+#    .option("driver", postgres_properties["driver"]) \
 
 # df_flat = df.withColumn("cast_member", explode("cast"))
 # df.select("director").show()
