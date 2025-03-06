@@ -1,6 +1,48 @@
-version: '3.8'
+
 
 services:
+  # Based on Chris instructions
+#  spark-py:
+#    image: docker.io/bitnami/spark:latest
+#    container_name: spark_container
+#    command: /opt/spark/bin/pyspark
+#    environment:
+#      - SPARK_MODE=master
+#    ports:
+#      - "7077:7077"
+#      - "8080:8080"
+#    volumes:
+#      - .venv:/spark_py_env/
+#    restart: always
+
+# Based on GPT instructions OPT A: Works and I can connect to the interpreter. Can run python commands in IDE
+#  spark:
+#    image: apache/spark-py:latest
+#    container_name: pyspark_dev
+#    command: /bin/bash  # Start with a shell for flexibility
+#    volumes:
+#      - .:/workspace # Mount the current directory
+#    working_dir: /workspace
+#    environment:
+#      - PYSPARK_PYTHON=python3
+#      - SPARK_HOME=/opt/spark
+# BASED ON GPT instructions OPT B: Requires a custom image (See Dockerfile). It allows me to specify the python
+#  libraries I need directly in the Dockerfile. You need to "build" the image first from the Dockerfile
+  spark:
+    build: .
+    container_name: pyspark_dev
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/workspace
+    environment:
+      - PYTHONPATH=/opt/venv/lib/python3.10/site-packages
+      - SPARK_HOME=/opt/spark
+      - PATH=/opt/venv/bin:$PATH
+#    ports:
+#      - "4040:4040"
+#      - "8888:8888"
+    command: /bin/bash
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
@@ -37,3 +79,4 @@ services:
 volumes:
   mongo_data:
   pg_data:
+
