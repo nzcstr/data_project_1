@@ -1,0 +1,28 @@
+FROM ubuntu:latest AS base
+
+USER root
+ARG python_version="3.8"
+
+ENV workdir="/my_workkdir"
+
+RUN apt-get update &&  apt-get install -y software-properties-common
+
+# Add deadsnakes PPA (for getting latest python version)
+RUN add-apt-repository ppa:deadsnakes/ppa -y && apt-get update
+
+RUN apt-get install -y python3 python3-pip python3-venv
+
+# Set default Python version
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+RUN pip install --break-system-packages pyspark
+
+RUN python3 -m pip config set global.break-system-packages true
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+CMD ["/bin/bash"]
+
+USER 185
