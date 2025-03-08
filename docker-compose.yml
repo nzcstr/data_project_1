@@ -28,21 +28,31 @@ services:
 #      - SPARK_HOME=/opt/spark
 # BASED ON GPT instructions OPT B: Requires a custom image (See Dockerfile). It allows me to specify the python
 #  libraries I need directly in the Dockerfile. You need to "build" the image first from the Dockerfile
-  spark:
-    build: .
-    container_name: pyspark_dev
-    tty: true
-    stdin_open: true
-    volumes:
-      - .:/workspace
-    environment:
-      - PYTHONPATH=/opt/venv/lib/python3.10/site-packages
-      - SPARK_HOME=/opt/spark
-      - PATH=/opt/venv/bin:$PATH
-#    ports:
-#      - "4040:4040"
-#      - "8888:8888"
-    command: /bin/bash
+#  spark:
+#    build: .
+#    container_name: pyspark_dev
+#    tty: true
+#    stdin_open: true
+#    volumes:
+#      - .:/workspace
+#    environment:
+#      - PYTHONPATH=/opt/venv/lib/python3.10/site-packages
+#      - SPARK_HOME=/opt/spark
+#      - PATH=/opt/venv/bin:$PATH
+##    ports:
+##      - "4040:4040"
+##      - "8888:8888"
+#    command: /bin/bash
+#  python_spark_dev:   # Use this if you need to build the image
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.dev
+#    image: my_image_pyspark
+#    container_name: python_spark_dev
+#    volumes:
+#      - .:/my_workdir
+  python_spark_dev_prebuilt:
+    image: my_image_pyspark
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
