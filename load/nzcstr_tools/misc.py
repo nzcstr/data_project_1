@@ -4,9 +4,16 @@ from zipfile import ZipFile
 from pymongo import MongoClient
 import pandas as pd
 
+
+def kaggle_to_zip(file_path:str)-> str:
+    # Files downloaded directly from kaggle have no extension
+    # I simply add its extension, i.e. ".zip"
+    new_file_name = file_path.split("/")[-1] + ".zip"
+    return new_file_name
+
 def download_file_url(dst_dir:str, url:str)-> tuple[str, str]:
 
-    file_name = url.split("/")[-1] + ".zip"
+    file_name = kaggle_to_zip(url)
     dst_file_path = os.path.join(dst_dir, file_name)
 
     if not os.path.isdir(dst_dir):
