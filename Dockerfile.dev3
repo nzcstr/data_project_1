@@ -1,0 +1,28 @@
+# Usar la imagen oficial de Spark con Hadoop
+FROM bitnami/spark:latest
+
+# Instalar dependencias necesarias para Python
+USER root
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip3 install --upgrade pip && \
+    pip3 install pyspark pandas numpy && apt-get install -y iputils-ping
+
+# Definir variables de entorno necesarias para Spark y PyCharm
+ENV SPARK_HOME=/opt/bitnami/spark
+ENV PATH="$SPARK_HOME/bin:$SPARK_HOME/sbin:$PATH"
+
+# Crear una carpeta de trabajo para el código en el contenedor
+WORKDIR /app
+
+# Exponer puertos usados por Spark
+EXPOSE 4040 7077 8080
+
+COPY requirements.txt .
+
+RUN pip3 install -r requirements.txt
+
+# Definir el comando por defecto
+CMD ["/bin/bash"]
+
+
+

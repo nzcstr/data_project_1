@@ -1,3 +1,5 @@
+import findspark
+findspark.init()
 #from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, explode , col, expr, when
@@ -8,10 +10,12 @@ from pyspark.sql.functions import udf, explode , col, expr, when
 # Define MongoDB Connection URI
 DB_NAME = "netflix_db"
 COLLECTION_NAME = "shows"
-mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}"
+#mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}" # Use this when hosting code locally
+mongo_uri = f"mongodb://mongodb:27017/{DB_NAME}.{COLLECTION_NAME}" # super pito
 
 # Define PGSQL Conection details
-pg_url = "jdbc:postgresql://localhost:5432/netflix_show_recommendation"
+#pg_url = "jdbc:postgresql://localhost:5432/netflix_show_recommendation" # Use this when hosting code locally
+pg_url = "jdbc:postgresql://postgres:5432/netflix_show_recommendation"
 postgres_properties = {
     "user": "user",
     "password": "password",
@@ -22,19 +26,22 @@ table_name = "netflix_shows"
 
 # Create a PySpark session with MongoDB support
 # Add postgreSQL support too
+print(f"MONGO URI: {mongo_uri}")
 spark = SparkSession.builder \
     .appName("ShowRecommendation") \
-    .config("spark.mongodb.input.uri", mongo_uri) \
-    .config("spark.mongodb.output.uri", mongo_uri) \
     .config("spark.jars.packages",
             "org.mongodb.spark:mongo-spark-connector_2.12:10.4.1,"
             "org.postgresql:postgresql:42.7.4") \
+    .config("spark.mongodb.read.connection.uri", mongo_uri) \
+    .config("spark.mongodb.write.connection.uri", mongo_uri) \
     .getOrCreate()
-
-#  .config("spark.jars.packages", "org.postgresql:postgresql:42.2.27") \
-
+# .config("spark.mongodb.input.uri", mongo_uri) \
+#     .config("spark.mongodb.output.uri", mongo_uri) \
+    #  .config("spark.jars.packages", "org.postgresql:postgresql:42.2.27") \
+print("before loading data")
 # Load Data from MongoDB
-df = spark.read.format("mongodb").option("database", DB_NAME).option("collection", COLLECTION_NAME).load()
+df = spark.read.format("mongodb").option("uri", mongo_uri).option("database", DB_NAME).option("collection",
+                                                                                    COLLECTION_NAME).load()
 
 # Show Data
 df.show(5)
@@ -96,6 +103,18 @@ missing_cast = df.where(df["cast"].isNull()).select("title", "cast")
 #Remove rows with NULL columns
 df_wo_null_cast_directors = df.dropna()
 print(f"Number of entries after dropping NULL: {df_wo_null_cast_directors.count()}")
+# df_clean = df_wo_null_cast_directors.withColumn("")
+
+#todo: convert dates to date datatype
+
+## Normalize data
+# T1 = shows
+# T2 = directors
+# T3 = show_directors (relational table)
+# T4 = casting
+# T5 = show_casting
+
+df_shows = df_wo_null_cast_directors.select(["show_id", "type", "title"])
 
 # Export to postgresql DB
 df_wo_null_cast_directors.write.format("jdbc") \
