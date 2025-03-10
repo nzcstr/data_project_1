@@ -6,6 +6,7 @@ import pandas as pd
 from pyspark.sql.functions import split, explode, col, lpad, lit, row_number, concat
 from pyspark.sql.window import Window
 from pyspark.sql.dataframe import DataFrame
+import warnings
 
 def kaggle_to_zip(file_path:str)-> str:
     # Files downloaded directly from kaggle have no extension
@@ -59,22 +60,54 @@ def spark_flat_column(df:DataFrame, in_col:str, out_col:str, sep:str) -> DataFra
     ''' Flattens a field: generate multiple rows for a multi-value field.
         It yields a dataframe with removed duplicate rows.
     '''
+    if in_col != out_col:
+        warnings.warn(f"New field name detected: {in_col} --> {out_col} ")
     df_split = df.withColumn("array", split(col(in_col), sep))
     cols = df_split.columns[:-1]
-    df_exploded = df_split.select(*cols, explode(col("array")).alias(out_col))
+
+    if len(cols) == 1:
+        # When working with a single field, return a dataframe with only the new field.
+        # We assume that new field will replace the input field.
+        df_exploded = df_split.select(explode(col("array")).alias(out_col))
+        df_exploded = df_exploded.select(out_col)
+    elif len(cols) > 1:
+        if in_col == out_col:
+            raise ValueError("Input and output columns must have different names")
+        else:
+            df_exploded = df_split.select(*cols, explode(col("array")).alias(out_col))
+
     df_exploded = df_exploded.dropDuplicates()
+
     return df_exploded
 
-def spark_custom_index(df:DataFrame, target_col:str, idx_name:str, prefix:str, pad:int) -> DataFrame:
+def spark_custom_key(df:DataFrame, target_col:str, idx_name:str, prefix:str, pad:int) -> DataFrame:
 
     # Add row number based on target col
     window_spec = Window.orderBy(target_col)
     out_nrow = df.withColumn("row_number", row_number().over(window_spec))
 
     # Customize index
-    out_custom = df.withColumn(
+    out_custom = out_nrow.withColumn(
         idx_name,
         concat(lit(prefix), lpad(col("row_number").cast("string"), pad, "0"))
     )
 
+    out_custom = out_custom.drop("row_number")
     return out_custom
+
+def spark_gen_intermediate_table(left_df:DataFrame, right_df:DataFrame,left_idx:str , right_idx:str, on_field_left:str, on_field_right:str=None) -> DataFrame:
+    # left_df is a "flatten" Dataframe with only fields (left_idx, on_field_left)
+    out_df = None
+    if on_field_left == on_field_right:
+        out_df =  left_df.join(right_df, on=on_field_left, how="left")
+    elif on_field_left != on_field_right:
+        out_df = left_df.join(right_df, left_df[on_field_left] == right_df[on_field_right], how="left")
+
+    n_nulls = out_df.filter(col(right_idx).isNull()).count()
+    if n_nulls > 0:
+        warnings.warn(f"Join generated Null entries. Total nulls = {n_nulls}")
+
+    out_df = out_df.select([left_idx, right_idx])
+    return out_df
+
+
