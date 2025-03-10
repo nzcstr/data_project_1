@@ -26,3 +26,11 @@ def get_director(title: str) -> str:
     finally:
         return director
 
+def get_director_justwatch():
+    #todo: write scrapping function from "justwatch.com"
+    pass
+
+def get_director_imdb():
+    #todo: write scrapping function using IMDB API
+    pass
+

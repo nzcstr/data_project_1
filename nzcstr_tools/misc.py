@@ -3,7 +3,9 @@ import wget
 from zipfile import ZipFile
 from pymongo import MongoClient
 import pandas as pd
-
+from pyspark.sql.functions import split, explode, col, lpad, lit, row_number, concat
+from pyspark.sql.window import Window
+from pyspark.sql.dataframe import DataFrame
 
 def kaggle_to_zip(file_path:str)-> str:
     # Files downloaded directly from kaggle have no extension
@@ -37,6 +39,7 @@ def extract_zip(zip_file_path:str, dst_dir:str) -> str:
     else:
         print("Data already extracted")
     return extracting_dir
+
 def csv_to_mongo(csv_file_path:str, mongo_uri:str, mongo_db:str, mongo_collection:str) -> None:
 
     # Get MongoDB connection details
@@ -51,3 +54,27 @@ def csv_to_mongo(csv_file_path:str, mongo_uri:str, mongo_db:str, mongo_collectio
     # Export to mongo
     collection.insert_many(data)
     print("Data has been loaded into MongoDB!")
+
+def spark_flat_column(df:DataFrame, in_col:str, out_col:str, sep:str) -> DataFrame:
+    ''' Flattens a field: generate multiple rows for a multi-value field.
+        It yields a dataframe with removed duplicate rows.
+    '''
+    df_split = df.withColumn("array", split(col(in_col), sep))
+    cols = df_split.columns[:-1]
+    df_exploded = df_split.select(*cols, explode(col("array")).alias(out_col))
+    df_exploded = df_exploded.dropDuplicates()
+    return df_exploded
+
+def spark_custom_index(df:DataFrame, target_col:str, idx_name:str, prefix:str, pad:int) -> DataFrame:
+
+    # Add row number based on target col
+    window_spec = Window.orderBy(target_col)
+    out_nrow = df.withColumn("row_number", row_number().over(window_spec))
+
+    # Customize index
+    out_custom = df.withColumn(
+        idx_name,
+        concat(lit(prefix), lpad(col("row_number").cast("string"), pad, "0"))
+    )
+
+    return out_custom
