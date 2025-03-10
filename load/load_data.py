@@ -1,4 +1,3 @@
-from pymongo import MongoClient
 import pandas as pd
 pd.set_option("display.max_columns", 6)
 from nzcstr_tools.misc import download_file_url, extract_zip, csv_to_mongo
