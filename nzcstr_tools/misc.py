@@ -52,9 +52,17 @@ def csv_to_mongo(csv_file_path:str, mongo_uri:str, mongo_db:str, mongo_collectio
     df = pd.read_csv(csv_file_path)
     data = df.to_dict(orient='records')
 
+    # Check if collection exists already
+    if collection.count_documents({}) > 0: # There is at least one document
+        print(f"Data already exists in collection '{mongo_collection}'. Loading aborted!")
+        return
+
     # Export to mongo
-    collection.insert_many(data)
-    print("Data has been loaded into MongoDB!")
+    if data:
+        collection.insert_many(data)
+        print("Data has been loaded into MongoDB!")
+    else:
+        print("No data has been detected in source CSV file!")
 
 def spark_flat_column(df:DataFrame, in_col:str, out_col:str, sep:str) -> DataFrame:
     ''' Flattens a field: generate multiple rows for a multi-value field.
