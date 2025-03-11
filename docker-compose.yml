@@ -13,7 +13,8 @@ services:
       - "7077:7077"
       - "8080:8080"
     volumes:
-      - ./:/opt/project/ # Container gets a copy of repository for running python scripts from within container.
+     # - ./:/opt/project/ # Container gets a copy of repository for running python scripts from within container.
+      - ./:/app/
     networks:
      - my_network
 
