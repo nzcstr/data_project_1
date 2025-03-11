@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PostgresContainer",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "netflix_show_recommendation",
+      "Username": "user",
+      "SSLMode": "prefer"
+    }
+  }
+}

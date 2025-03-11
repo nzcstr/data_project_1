@@ -1,34 +1,56 @@
 # Data warehousing + ETL
-##TODO
-- [ ] Create Dockerfile w/ instructions to setup the python venv
-- [ ] Add service to create a python container to run code
-- [x] Add code `load_data.py` to automatically download data 
-- [ ] _Transform_: Create a new file to process data (data cleaning, formatting, etc)
 
 ## Introduction
-In this project we will answer some business questions regarding (#todo: topic) . To this end, we will build all the necessary infrastructure to gather (Extract) data from multiple sources, normalize and clean it (Transform) and store it into a data warehouse.
+In this data engineering project we present a complete ETL pipeline deployed entirely with Docker containers.
+We simulate a typical data flow from raw data ingestion to analytics and visualization.
 
-This project will be complemented with subsequent projects that will leverage final outputs obtained here.
+We start with a CSV dataset obtained from Kaggle, which is ingested into MongoDB, 
+where Mongo acts as a data lake in this architecture. 
+From this point we perform an ETL process using Apache Spark to clean, 
+transform, normalize the data and then loading it into a PostgreSQL data warehouse.
 
-The objectives of this project are:
-- Build a data warehouse solution that is scalable and can be easily deployed
-- Develop an automated ETL pipeline that recollects data, process it and stores it daily.
-
-The technologies required to set up the baseline structure are:
-- Docker: To ensure reproducibility of project in different machines and to facilitate its deployment
-- (#todo: warehouse solution)
-- Apache Airflow: to orchestrate and automate the different steps included in the data pipelines
+Data loaded into PostgreSQL is formated into a Snowflake schema,
+breaking down the original data structure into multiple relational tables and intermediate tables that support efficient querying and analysis.
 
 
-## Setup environment
-### Python environment
-- Download the `requirements.txt` file to setup the python environment.
-- Once you created a new python virtual environment, use `source path/to/python/env/bin/active`
-- Install dependencies using `pip install -r path/to/requirements.txt`
+## Current workflow
+- **Data source:** A Kaggle CSV file containing data from thousands of shows on Netflix (see [Netflix Movies and TV Shows(2008-2021)](https://www.kaggle.com/datasets/shivamb/netflix-shows)).
+- **Data lake**: Raw data is imported into MongoDB, which plays the role of a centralized storage for raw and semi-processed data.
+- **ETL processing**: Spark reads stored data in MongoDB, performs a series of data cleaning and formatting steps and exports the cleaned and normalized data into PostgreSQL.
+- **Data warehouse**: Processed data is stored following a Snowflake schema, which includes fact tables (shows), dimension tables, and relational (intermediate) tables.
 
-### Docker containers
-- (Install docker)
-- Build the docker images using `docker-compose build`
-- Start the containers using `docker-compose up -d`
-- Verify that containers are running by using `docker ps`. You should see 2 containers.
+## Upcoming Features
+- **SQL analytics**: Run a series of complex SQL queries in PostgreSQL to answer specific business questions.
+- **Visualization**: Build an interactive dashboard using Looker Studio to present key insights and metrics.
+
+## Technology Stack
+- **Docker**: The entire data processing pipeline runs using containerized services for MongoDB, PostgreSQL, Spark (including Python environment) and pgAdmin.
+- **MongoDB**: Works as a data lake layer for storing raw data.
+- **Apache Spark**: Handles the data processing and transformation portion of this project.
+- **PostgreSQL**: Stores normalized, structured data ready for analytics.
+- **Looker Studio** (coming soon): For data visualization and reporting.
+
+## Requirements 
+- **Docker**: to run this project you require a functional copy Docker. And docker CLI commands from terminal.
+
+## How to run
+1. Clone this repository to your local system.
+2. To setup the docker services, open a terminal inside the repository and run the following docker command: 
+   ```shell 
+   docker-compose up -d 
+   ```
+3. To run the pipeline run the following commands:
+   1. For data ingestion
+         ```shell
+        docker exec pyspark_container python3 ./ETL/data_ingestion.py
+         ```
+   2. For running the ETL process
+      ```shell 
+        docker exec pyspark_container python3 ./ETL/ETL.py 
+      ```
+4. You can access the process data via pgAdmin directly from your browser at:
+   ```html
+   http://localhost:5050/
+   ```
+
 

@@ -1,6 +1,23 @@
-version: '3.8'
+
 
 services:
+  pyspark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pyspark_container
+    image: nzcstr_n_chris/pyspark:v2
+    tty: true
+    ports:
+      - "4040:4040"
+      - "7077:7077"
+      - "8080:8080"
+    volumes:
+     # - ./:/opt/project/ # Container gets a copy of repository for running python scripts from within container.
+      - ./:/app/
+    networks:
+     - my_network
+
   mongodb:
     image: mongo:latest
     container_name: mongodb_container
@@ -9,6 +26,11 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: always
+    environment:
+      - MONGO_HOME=/usr/bin/
+      - PATH=/usr/bin/mongo:$PATH
+    networks:
+      - my_network
 
   postgres:
     image: postgres:latest
@@ -22,6 +44,8 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     restart: always
+    networks:
+      - my_network
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -29,11 +53,19 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_CONFIG_SERVER_MODE: "False" # This is needed for loading servers.json
     ports:
       - "5050:80"
     depends_on:
       - postgres
-
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json # Mount config file
+    networks:
+      - my_network
 volumes:
   mongo_data:
   pg_data:
+
+networks:
+  my_network:
+
