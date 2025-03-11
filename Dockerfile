@@ -1,5 +1,5 @@
 # Use the last oficial image of Spark. Equal to "Dockerfile.dev3"
-FROM bitnami/spark:latest
+FROM bitnami/spark:3.5.5
 
 # Install python pip  and "ping" command
 USER root

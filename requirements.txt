@@ -4,7 +4,7 @@ pandas==2.2.3
 psycopg2-binary==2.9.10
 py4j==0.10.9.7
 pymongo==4.11.1
-pyspark==3.5.4
+pyspark==3.5.5
 python-dateutil==2.9.0.post0
 pytz==2025.1
 six==1.17.0
