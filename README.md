@@ -39,20 +39,18 @@ breaking down the original data structure into multiple relational tables and in
    ```shell 
    docker-compose up -d 
    ```
-3. To run the pipeline run the following command:
-   ```shell
-   docker
+3. To run the pipeline run the following commands:
+   1. For data ingestion
+         ```shell
+        docker exec pyspark_container python3 ./ETL/data_ingestion.py
+         ```
+   2. For running the ETL process
+      ```shell 
+        docker exec pyspark_container python3 ./ETL/ETL.py 
+      ```
+4. You can access the process data via pgAdmin directly from your browser at:
+   ```html
+   http://localhost:5050/
    ```
 
-## Setup environment
-### Python environment
-- Download the `requirements.txt` file to setup the python environment.
-- Once you created a new python virtual environment, use `source path/to/python/env/bin/active`
-- Install dependencies using `pip install -r path/to/requirements.txt`
-
-### Docker containers
-- (Install docker)
-- Build the docker images using `docker-compose build`
-- Start the containers using `docker-compose up -d`
-- Verify that containers are running by using `docker ps`. You should see 2 containers.
 
