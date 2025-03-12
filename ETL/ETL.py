@@ -9,12 +9,12 @@ def main():
     #todo: Create function to read configuration parameters from file
     DB_NAME = "netflix_db"
     COLLECTION_NAME = "shows"
-    mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}" # Use this when hosting code locally
-    # mongo_uri = f"mongodb://mongodb:27017/{DB_NAME}.{COLLECTION_NAME}" # super pito
+    #mongo_uri = f"mongodb://localhost:27017/{DB_NAME}.{COLLECTION_NAME}" # Use this when hosting code locally
+    mongo_uri = f"mongodb://mongodb:27017/{DB_NAME}.{COLLECTION_NAME}" # super pito
 
     # Define PGSQL Conection details
-    pg_url = "jdbc:postgresql://localhost:5432/netflix_show_recommendation" # Use this when hosting code locally
-    # pg_url = "jdbc:postgresql://postgres:5432/netflix_show_recommendation"
+    #pg_url = "jdbc:postgresql://localhost:5432/netflix_show_recommendation" # Use this when hosting code locally
+    pg_url = "jdbc:postgresql://postgres:5432/netflix_show_recommendation"
     postgres_properties = {
         "user": "user",
         "password": "password",
