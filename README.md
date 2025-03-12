@@ -48,7 +48,7 @@ breaking down the original data structure into multiple relational tables and in
       ```shell 
         docker exec pyspark_container python3 ./ETL/ETL.py 
       ```
-4. You can access the process data via pgAdmin directly from your browser at:
+4. You can access the processed data via pgAdmin directly from your browser at:
    ```html
    http://localhost:5050/
    ```
