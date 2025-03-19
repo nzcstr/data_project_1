@@ -12,9 +12,10 @@ data/netflix-shows.zip
 data/netflix-shows/
 .idea/
 doc/figures/logos/
-exports/*.csv
 ETL/data/netflix-shows.zip
 ETL/data/netflix-shows/
 ETL/temp.py
 ETL/transform_data_testing.py
 ETL/ETL_2.py
+SQL/exports/*.csv
+
