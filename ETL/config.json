@@ -1,0 +1,19 @@
+{
+  "data_dir": "./data",
+  "kaggle_url": "https://www.kaggle.com/api/v1/datasets/download/shivamb/netflix-shows",
+
+  "mongo_config": {
+    "mongo_db_name": "raw_netflix_show_db",
+    "mongo_collection_name": "shows",
+    "mongo_host": "mongodb://mongodb:27017/"
+  },
+
+  "pg_config": {
+    "pg_host": "jdbc:postgresql://postgres:5432/",
+    "pg_db_name": "netflix_show_db",
+    "pg_user": "user",
+    "pg_user_password": "password",
+    "pg_driver": "org.postgresql.Driver"
+
+  }
+}

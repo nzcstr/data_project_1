@@ -1,18 +1,23 @@
 import pandas as pd
 pd.set_option("display.max_columns", 6)
-from nzcstr_tools.misc import download_file_url, extract_zip, csv_to_mongo
+from nzcstr_tools.misc import download_file_url, extract_zip, csv_to_mongo, read_config
 import os, glob
 
 
 def main():
-# Download data
-    DATA_DIR="./data"
-    URL = "https://www.kaggle.com/api/v1/datasets/download/shivamb/netflix-shows"
-    DB_NAME = "netflix_db"
-    COLLECTION_NAME = "shows"
+    # Read config file
+
+    config = read_config("./ETL/config.json")
+
+    # Download data
+    DATA_DIR = config["data_dir"]
+    URL_KAGGLE = config["kaggle_url"]
+    DB_NAME = config["mongo_config"]["mongo_db_name"]
+    COLLECTION_NAME = config["mongo_config"]["mongo_collection_name"]
     # MONGO_URI = "mongodb://localhost:27017"   # This works if hosting python code locally
-    MONGO_URI = "mongodb://mongodb:27017" # This can be included as environment variable in docker-compose.yml
-    path_to_file, file_name = download_file_url(DATA_DIR, URL)
+    MONGO_URI = config["mongo_config"]["mongo_host"] # This can be included as environment variable in docker-compose.yml
+
+    path_to_file, file_name = download_file_url(DATA_DIR, URL_KAGGLE)
 
     #Extract
     extracted_dir = extract_zip(path_to_file, DATA_DIR)
