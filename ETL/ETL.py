@@ -88,7 +88,7 @@ def main():
     # T3 = show_directors (relational table)
     # T4 = casting
     # T5 = show_casting (relational table)
-    # T6 = listed_in
+    # T6 = genres ("listed_in" in source db)
     # T7 = show_listed (relational table)
     # T8 = countries
     # T9 = show_countries (relational table)
@@ -105,65 +105,12 @@ def main():
         out_df = spark_remove_string_blank_spaces(out_df)
         return out_df
 
-    print("##### BEFORE dimension tables")
     df_directors = process_dimension_table(df_clean, dimension_col="director", id_name="director_id", id_prefix="dt", pad=5)
     df_directors.printSchema()
     df_casting = process_dimension_table(df_clean, dimension_col="cast", id_name="actor_id" ,id_prefix="dt", pad=6).withColumnRenamed("cast", "actor")
     df_genres = process_dimension_table(df_clean, dimension_col="listed_in", id_name="genre_id", id_prefix="dt", pad=3).withColumnRenamed("listed_in", "genres")
     df_countries = process_dimension_table(df_clean, dimension_col="country",id_name="country_id" , id_prefix="dt", pad=3)
-    print("##### AFTER dimension tables")
-    # df_directors = df_clean.select("director").dropna().dropDuplicates()
-    # df_casting = df_clean.select("cast").dropna().dropDuplicates()
-    # df_genres = df_clean.select("listed_in").dropna().dropDuplicates()
-    # df_countries = df_clean.select("country").dropna().dropDuplicates()
 
-    # Flattening data + remove duplicates
-    print("##### PRINT 2")
-    # df_directors = spark_flat_column(
-    #     df=df_directors,
-    #     in_col="director",
-    #     out_col="director",
-    #     sep=","
-    # )
-    # print(
-        # "##### PRINT 3")
-    # df_casting = spark_flat_column(df_casting, "cast", "actor", ",")
-    # print(
-        # "##### PRINT 4")
-    # df_genres = spark_flat_column(df_genres, "listed_in", "genres", ",")
-    # print(
-    #     "##### PRINT 5")
-    # df_countries = spark_flat_column(df_countries, "country", "country", ",")
-
-
-
-
-    # Create indexes + Remove trailing and leading spaces + remove NULL
-    # print(
-    #     "##### PRINT 6")
-    # df_directors = spark_remove_string_blank_spaces(spark_simple_custom_key(
-    #     df=df_directors,
-    #     # target_col="director",
-    #     idx_name="director_id",
-    #     prefix="dt",
-    #     pad=5
-    # )).dropna()
-    # print(
-    #     "##### PRINT 7")
-    # df_casting = spark_remove_string_blank_spaces(spark_simple_custom_key(df_casting, "actor_id", "ac", 6)).dropna()
-    # print(
-    #     "##### PRINT 8")
-    # df_genres = spark_remove_string_blank_spaces(spark_simple_custom_key(df_genres, "genres_id", "ge", 3)).dropna()
-    # print(
-    #     "##### PRINT 9")
-    # df_countries = spark_remove_string_blank_spaces(spark_simple_custom_key(df_countries, "country_id", "co", 3)).dropna()
-
-    # tb_to_export.update(
-    #     {
-    #         "directors": df_directors,
-    #         "casting": df_casting,
-    #         "genres": df_genres,
-    #         "countries": df_countries})
 
     # Generate intermediate tables + trim
     df_clean.printSchema()
@@ -181,29 +128,15 @@ def main():
     )).cache()
     base.show(5)
     df_clean.unpersist()
+
+    # Export tables as soon as data is ready and no longer required.
+    # export_table_to_postgres includes a check on dataframe to "unpersist" it if cached.
     export_table_to_postgres(df_shows, "shows", pg_uri, postgres_properties)
-    print(
-        "##### PRINT 10")
     rt_show_directors = spark_flat_column(base.select(["show_id", "director"]), "director", "director_flat", ",").select("show_id", "director_flat")
-    print(
-        "##### PRINT 11")
-    rt_show_directors = spark_gen_intermediate_table(
-        left_df=rt_show_directors,
-        right_df=df_directors,
-        left_idx="show_id",
-        right_idx="director_id",
-        on_field_left="director_flat",
-        on_field_right="director",
-        how="inner",
-    )
-    print(
-        "##### PRINT 12")
+    rt_show_directors = spark_gen_intermediate_table(left_df=rt_show_directors, right_df=df_directors, left_idx="show_id", right_idx="director_id", on_field_left="director_flat", on_field_right="director", how="inner")
     export_table_to_postgres(df_directors, "directors", pg_uri, pg_properties=postgres_properties)
-    print(
-        "##### PRINT 13")
     export_table_to_postgres(rt_show_directors, "rt_show_directors", pg_uri, pg_properties=postgres_properties)
-    print(
-        "##### PRINT 14")
+
 
     rt_show_casting = spark_flat_column(base.select(["show_id", "cast"]), "cast", "cast_flat", ",").select("show_id", "cast_flat")
     rt_show_casting = spark_remove_string_blank_spaces(spark_gen_intermediate_table(rt_show_casting, df_casting, "show_id", "actor_id", "cast_flat", "actor"))
@@ -221,23 +154,9 @@ def main():
     export_table_to_postgres(df_countries, "countries", pg_uri, pg_properties=postgres_properties)
     export_table_to_postgres(rt_show_countries, "rt_show_countries", pg_uri, pg_properties=postgres_properties)
 
-    # tb_to_export.update({"rt_show_directors":rt_show_directors, "rt_show_casting":rt_show_casting, "rt_show_genres":rt_show_genres, "rt_show_countries":rt_show_countries})
 
-    # Export to postgresql DB
     base.unpersist()
-    # for tb_name in tb_to_export:
-    #     print(f"Exporting {tb_name}")
-    #     tb_to_export[tb_name].write.format("jdbc") \
-    #         .option("url", pg_uri) \
-    #         .option("dbtable", tb_name) \
-    #         .option("user", postgres_properties["user"]) \
-    #         .option("password", postgres_properties["password"]) \
-    #         .option("driver", postgres_properties["driver"]) \
-    #         .mode("overwrite").save()
-    #     print(f"Table '{tb_name}' exported into '{pg_uri}'")
-    #
-    #     if tb_to_export[tb_name].is_cached:
-    #         tb_to_export[tb_name].unpersist()
+
 
 
     spark.stop()
