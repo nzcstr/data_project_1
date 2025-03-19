@@ -38,11 +38,12 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: netflix_show_recommendation
+      POSTGRES_DB: netflix_show_db
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./SQL:/app/ # Import "repo_name/SQL"  into container
     restart: always
     networks:
       - my_network
