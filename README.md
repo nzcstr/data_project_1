@@ -12,9 +12,6 @@ transform, normalize the data and then loading it into a PostgreSQL data warehou
 Data loaded into PostgreSQL is formated into a Snowflake schema,
 breaking down the original data structure into multiple relational tables and intermediate tables that support efficient querying and analysis.
 
->Notice that along this document you will find blocks such as this one to add some more context and the reasoning behind some of the decisions made in this project.
-> Feel free to ignore these notes as these are not required to replicate the workflow.
-
 ## Current workflow
 - **Data source:** A Kaggle CSV file containing data from thousands of shows on Netflix (see [Netflix Movies and TV Shows(2008-2021)](https://www.kaggle.com/datasets/shivamb/netflix-shows)).
 - **Staging Zone**: Raw data is imported into MongoDB. This is a temporary storing solution with a flexible data schema prior to data transformation.
@@ -50,11 +47,11 @@ For obtaining more information about the architecture please refer to [Architect
    ```
 
 3. To run the pipeline run the following commands:
-   1. **Data ingestion**. This command will download the dataset from Kaggle and store it into a MongoDB database _as it_:
-         ```shell
-        docker exec pyspark_container python3 ./ETL/data_ingestion.py
-         ```
-   2. **ETL process**. This script gathers the data from Mongo (_extracts_) and apply a series of basic data cleaning tasks (i.e. remove duplicates, null values). It also formats and splits data into multiple tables following a Snowflake data schema.
+   - **Data ingestion**. This command will download the dataset from Kaggle and store it into a MongoDB database without any data alterations:
+     ```shell
+         docker exec pyspark_container python3 ./ETL/data_ingestion.py
+     ```
+   - **ETL process**. This script gathers the data from Mongo (_extracts_) and apply a series of basic data cleaning tasks (i.e. remove duplicates, null values). It also formats and splits data into multiple tables following a Snowflake data schema.
       ```shell 
         docker exec pyspark_container python3 ./ETL/ETL.py 
       ```
@@ -64,7 +61,7 @@ You can find more information about the ETL process at [ETL_process](/doc/ETL_pr
    ```html
    http://localhost:5050/
    ```
-You will be prompted to insert the pgadmin password (which is `admin`:`adminpassword`) and 
+You will be prompted to insert the pgadmin password (which is `admin`:`adminpassword` ) and 
 then again when accessing the database (`user`:`password`).
 Notice that at this point no table relationship or any 
 constrains has been properly set up in the database. 
@@ -105,16 +102,18 @@ as a `Materialized view`.
 
 ## Export data
 Now that our data has been through some essential cleaning and formatting we can export it so we can use it for generating Dynamic Dashboards in the next section.
-We have prepared an sql script to export each table as a CSV file. To run the script use the following command:
+We have prepared a sql script to export each table as a CSV file. However, let's first create a denormalize version of the database by running:
+
+```shell
+   docker exec postgres_container psql -U user -d netflix_show_db -f create_all_join_mat_view.sql
+```
+
+Then we can proceed with the exportation process by running the script use the following command:
 ```shell
    docker exec postgres_container psql -U user -d netflix_show_db -f /app/export_to_csv.sql
 ```
-Then we can copy the exported files into our local system:
+You should find all exported CSVs under `/repo_folder/SQL/exports`
 
-```shell
-   docker cp postgres_container:/app/exports ./exports
-```
->You can replace `./exports` for a different location in your local system.
 
 ## Dashboard - Looker Studio
 **_Coming soon..._**
