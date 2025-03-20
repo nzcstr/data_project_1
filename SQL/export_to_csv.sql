@@ -9,5 +9,5 @@ BEGIN;
     COPY rt_show_casting TO '/app/exports/rt_show_casting.csv' DELIMITER ',' CSV HEADER;
     COPY rt_show_genres TO '/app/exports/rt_show_genres.csv' DELIMITER ',' CSV HEADER;
     COPY rt_show_countries TO '/app/exports/rt_show_countries.csv' DELIMITER ',' CSV HEADER;
-    COPY mat_view_all_join TO '/app/exports/mat_view_all_join.csv' DELIMITER ',' CSV HEADER;
+    COPY (SELECT * FROM mat_view_all_join) TO '/app/exports/mat_view_all_join.csv' DELIMITER ',' CSV HEADER;
 COMMIT;
