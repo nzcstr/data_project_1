@@ -3,7 +3,7 @@ import wget
 from zipfile import ZipFile
 from pymongo import MongoClient
 import pandas as pd
-from pyspark.sql.functions import split, explode, col, lpad, lit, row_number, concat, trim, monotonically_increasing_id
+from pyspark.sql.functions import split, explode, col, lpad, lit, row_number, concat, trim, monotonically_increasing_id, regexp_replace
 from pyspark.sql.window import Window
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.types import StringType
@@ -128,6 +128,11 @@ def spark_simple_custom_key(df: DataFrame, idx_name: str, prefix: str, pad: int)
         )
     )
     return out_custom
+
+def spark_multiline_str_to_single(df:DataFrame, col_name:str) -> DataFrame:
+    out = df.withColumn(col_name, regexp_replace(col(col_name), r'[\r\n]+', ' '))
+
+    return out
 
 
 def spark_gen_intermediate_table(left_df:DataFrame, right_df:DataFrame,left_idx:str , right_idx:str, on_field_left:str, on_field_right:str=None, how="inner") -> DataFrame:

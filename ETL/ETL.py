@@ -1,7 +1,9 @@
 import findspark
 findspark.init()
 from pyspark.sql import SparkSession
-from nzcstr_tools.misc import spark_flat_column,  spark_gen_intermediate_table, read_config, spark_remove_string_blank_spaces, export_table_to_postgres, spark_simple_custom_key
+from nzcstr_tools.misc import (spark_flat_column,  spark_gen_intermediate_table, read_config,
+                               spark_remove_string_blank_spaces, export_table_to_postgres,
+                               spark_simple_custom_key, spark_multiline_str_to_single)
 from pyspark.sql.functions import to_date, coalesce, col
 from pyspark.sql.dataframe import DataFrame
 
@@ -92,11 +94,11 @@ def main():
     # T7 = show_listed (relational table)
     # T8 = countries
     # T9 = show_countries (relational table)
-    tb_to_export = {}
-    print("##### PRINT 1")
+
     df_shows = df_clean.select(["show_id", "type", "title", "release_year", "date_added", "rating", "duration", "description"])
     df_shows = spark_remove_string_blank_spaces(df_shows)
-    tb_to_export["shows"]=df_shows
+    df_shows = spark_multiline_str_to_single(df_shows, "description")
+
 
     def process_dimension_table(base_df:DataFrame, dimension_col:str, id_name:str, id_prefix:str="", pad:int=5):
         out_df = base_df.select(dimension_col).dropna().dropDuplicates()
