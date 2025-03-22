@@ -116,7 +116,15 @@ You should find all exported CSVs under `/repo_folder/SQL/exports`
 
 
 ## Dashboard - Looker Studio
-**_Coming soon..._**
+
+For data visualization we employed Looker Studio and as data source we used the denormalized dataset we exported in previous section.
+We created a basic dashboard to visualise some of the main key points of our dataset (see Figure below). You can access the full interactive dashboard via this [LINK](https://lookerstudio.google.com/reporting/8a19c36f-dd67-4d05-aff5-bcd71e0267f5).
+
+![netlix_shows_report](./doc/figures/screenshot_netflix_report.png)
+
+We have to consider that the insights that we can derive from our dataset are not representative enough of current Netflix's shows dynamics. Our capacity to understand Netflix shows dynamics are limited to public data available. This project is based on a limited dataset with uncompleted data and with potential data biases.
+
+>Notice that we could also use the normalized data and the make the necessary joins later in Looker Studio and would require multiple steps to get proper access to data. This is way it is preferrable to work with a single data source that contains all that we need.
 
 ## Potential improvements
 - Fine data quality checks via data scrappy/API: Despite data cleaning there are still a minor issues in data due to wrongly typed data at the moment of creation of the dataset. Usually this can be could be prevented by constraining how data is input. It is difficult to systematically identify all error types and then correct them.
